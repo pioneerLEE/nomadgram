@@ -67,12 +67,21 @@ THIRD_PARTY_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'allauth.socialaccount.providers.facebook', #페이스북 #s 떄문에 철자 오류 ㅠㅠ
     'rest_framework', #REST framework
+    'rest_framework.authtoken', #REST framework authtoken
+    'taggit', #Tags for photos
+    'taggit_serializer', #tag serializer
+    'rest_auth', #rest_auth
+    'rest_auth.registration', #enable registration
 ]
 LOCAL_APPS = [
     'nomadgram.users.apps.UsersConfig',
     # Your stuff: custom apps go here
-    'nomadgram.images.apps.ImagesConfig',
+    'nomadgram.images.apps.ImagesConfig', 
+    #images app
+    'nomadgram.notifications.apps.NotificationsConfig', 
+    #images app
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -93,8 +102,6 @@ AUTHENTICATION_BACKENDS = [
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
 AUTH_USER_MODEL = 'users.User'
-# https://docs.djangoproject.com/en/dev/ref/settings/#login-redirect-url
-LOGIN_REDIRECT_URL = 'users:redirect'
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-url
 LOGIN_URL = 'account_login'
 
@@ -228,9 +235,9 @@ ACCOUNT_ALLOW_REGISTRATION = env.bool('DJANGO_ACCOUNT_ALLOW_REGISTRATION', True)
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_REQUIRED = False
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_EMAIL_VERIFICATION = 'none' # 이 부분을 고쳤음
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_ADAPTER = 'nomadgram.users.adapters.AccountAdapter'
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
@@ -239,3 +246,24 @@ SOCIALACCOUNT_ADAPTER = 'nomadgram.users.adapters.SocialAccountAdapter'
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+TAGGIT_CASE_INSENSITIVE  =  True
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        #여기에는 인증 스키마를 클래스 단위로 정의시켜 놓았음. 각 클라스에 대해 인증을 시도한다. 성공적으로 인증을 한 클래스의 반환 값이
+        #사용되고 request.user 및  request.auth를 성정한다. 
+        #  클래스가 인증되지 않으면 request.user(User 인스턴스와 관련이 있음)는 AnonymousUser 인스턴스로 설정되고,
+        #  request.auth(Token과 관련이 있음)는 None으로 설정된다.
+        # 'rest_framework.authentication.BasicAuthentication' (1)
+        # 'rest_framework.authentication.SessionAuthentication' (2) 1,2 두개가 기본적인 인증 스키마
+
+    ),
+}#내용이 디폴트 설정으로 모든 request는 승인이 필요하게끔 함
+#왜냐하면 API를 보호하기 위해. 가입 로그인같은 소수의 뷰만 공개하고, 나머지는 승인 과정을 거쳐야한다. 
+
+REST_USE_JWT = True
+ACCOUNT_LOGOUT_ON_GET = True
